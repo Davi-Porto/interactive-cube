@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Cube</title>
+    <link rel="stylesheet" href="style/style.css">
+    <script src="scripts/main.js" defer></script>
+</head>
+<body>
+    <div class="buttons efeito-rotate">
+        <button id="recordBtn">Record</button>
+        <button id="randomizeBtn">Randomize</button>
+        <button id="executeBtn">Execute</button>
+        <button id="loopExecuteBtn">Loop execute</button>
+        <button id="viewBtn">View</button>
+    </div>
+    <section class="container efeito-rotate">
+        <div class="cube">
+            <div style="--x:-1;--y:0">
+                <span style="--i:3" class="active"></span>
+                <span style="--i:2" class="active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+            <div style="--x:0;--y:0">
+                <span style="--i:3" class="active"></span>
+                <span style="--i:2" class="active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+            <div style="--x:1;--y:0">
+                <span style="--i:3" class="active"></span>
+                <span style="--i:2" class="active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+        </div>
+        <div class="cube">
+            <div style="--x:-1;--y:0">
+                <span style="--i:3" class="active"></span>
+                <span style="--i:2" class="active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+            <div style="--x:0;--y:0">
+                <span style="--i:3" class="this active"></span>
+                <span style="--i:2"></span>
+                <span style="--i:1"></span>
+            </div>
+            <div style="--x:1;--y:0">
+                <span style="--i:3" class="this active"></span>
+                <span style="--i:2" class="this active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+        </div>
+        <div class="cube">
+            <div style="--x:-1;--y:0">
+                <span style="--i:3" class="active"></span>
+                <span style="--i:2" class="active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+            <div style="--x:0;--y:0">
+                <span style="--i:3" class="this active"></span>
+                <span style="--i:2" class="this active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+            <div style="--x:1;--y:0">
+                <span style="--i:3" class="active"></span>
+                <span style="--i:2" class="this active"></span>
+                <span style="--i:1" class="active"></span>
+            </div>
+        </div>
+    </section>
+    <section class="modal none efeito-rotate">
+        <div id="closeBtn">
+            X
+        </div>
+        <textarea id="recorded" maxlength="1500" placeholder="You have no recorded function :("></textarea>
+    </section>
+</body>
+</html>
