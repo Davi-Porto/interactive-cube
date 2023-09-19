@@ -179,7 +179,8 @@ section.modal{
         background: white;
         resize: none;
         border-radius: 5px;
-        width: 300px;
+        min-width: 300px;
+        max-width: 1000px;
         max-height: 90%;
         min-height: 37px;
         outline: none;
@@ -194,7 +195,7 @@ section.modal.none{
 #myMSG {
     position: fixed;
     left: -100%;
-    top: 10px;
+    top: 65px;
     padding: 8px 36px;
     background: hsl(201, 100%, 53%);
     border-radius: 10px;

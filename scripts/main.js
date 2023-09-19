@@ -5,8 +5,18 @@ var intervalID;
 var recorded=[];
 var auxCTRL=[];
 var inAct=false;
-var textarea = window.document.querySelector("textarea");
+var textarea = window.document.querySelector("#recorded");
 var recordOF=false;
+
+const inputEvent = new Event('input', {
+    bubbles: true,
+    cancelable: true,
+});
+
+const clickEvent = new Event('click', {
+    bubbles: true,
+    cancelable: true,
+});
 
 class msgTempC extends HTMLElement {
     constructor() {
@@ -17,82 +27,96 @@ class msgTempC extends HTMLElement {
 }
 customElements.define('msg-temp', msgTempC);
 
-document.querySelector("#recordBtn").addEventListener("click", async () => {
-    This = document.querySelector("#recordBtn");
-    if(This.innerText=="Record"){
+textarea.addEventListener('input', (e) => {
+    textarea.style.height = (textarea.scrollHeight + 3) + 'px';
+});
+
+document.querySelector("#recordBtn").addEventListener("click", async (e) => {
+    if(document.querySelector("#recordBtn").innerText=="Record"){
         if(!inAct){
-            atualizaView("z");
-            This.innerText = "Finish";
-            inAct=false;
             recordOF=true;
+            atualizaView("z");
+            inAct=true;
+            nmBtn("Record", 1, e.target);
             await msgTemp("Listening...", "myMSG", 1000);
-            await msgTemp("Press (CLICK):\n\tActivate;\n\nPress (CTRL+CLICK):\n\tMultiple activate;", "myMSG", 5000);
+            await msgTemp("Press (CLICK):\n\tActivate;\n\nPress (CTRL+CLICK):\n\tMultiple activate;", "myMSG", 2500);
         }
-    }else if(This.innerText=="Finish"){
-        This.innerText = "Record";
-        inAct=false;
-        recordOF=false;
-        atualizaView("a");
+    }else if(document.querySelector("#recordBtn").innerText=="Finish"){
+        if(inAct){
+            nmBtn("Record", 0, e.target);
+            recordOF=false;
+            atualizaView("a");
+            inAct=false;
+        }
     }
 })
 
-document.querySelector("#randomizeBtn").addEventListener("click", () => {
-    This = document.querySelector("#randomizeBtn");
-    if(This.innerText=="Randomize"){
+document.querySelector("#randomizeBtn").addEventListener("click", (e) => {
+    if(document.querySelector("#randomizeBtn").innerText=="Randomize"){
         if(!inAct){
-            This.innerText = "Leave";
+            nmBtn("Randomize", 1, e.target);
             inAct=true;
             randomize(1)
         }
     }else{
-        This.innerText = "Randomize";
+        nmBtn("Randomize", 0, e.target);
         randomize(0);
     }
 })
 
-document.querySelector("#executeBtn").addEventListener("click", async() => {
-    This = document.querySelector("#executeBtn");
+document.querySelector("#executeBtn").addEventListener("click", async (e) => {
     if(!inAct){
-        This.innerText = "...";
         if(/^actDsct\(\[.*\)/.test(textarea.value)){
+            nmBtn("Execute", 1, e.target);
             inAct=true;
             tggActive();
             await eval(textarea.value);
             tggActive();
+            nmBtn("Execute", 0, e.target);
         }
         inAct=false;
-        This.innerText = "Execute";
     }
 })
 
-document.querySelector("#loopExecuteBtn").addEventListener("click", async() => {
-    This = document.querySelector("#loopExecuteBtn");
+
+var regEX = /\], "nl", \d*\);$/i;
+document.querySelector("#loopExecuteBtn").addEventListener("click", async (e) => {
     if(!inAct){
-        This.innerText = "Stop";
-        if(/^actDsct\(\[.*\)/.test(textarea.value)){
+        if(/^actDsct\(\[.*\)\;/m.test(textarea.value)){
+            nmBtn("Loop execute", 1, e.target);
             inAct=true;
             tggActive();
+            console.log(textarea.value);
+            textarea.value = (regEX.test(textarea.value)) ? textarea.value : textarea.value.replace(/\)\;/mg, `, "nl", 0);`);
+            console.log(textarea.value);
             while(inAct){
-                await eval(textarea.value);
-                Sleep(1500);
+                if(/^actDsct\(\[.*\)\;/m.test(textarea.value)){
+                    await eval(textarea.value);
+                }else{
+                    nmBtn("Loop execute", 2, e.target);
+                    textarea.value = textarea.value.replace(/, ?"nl", ?\d*\)\;/g, `);`);
+                    tggActive();
+                    inAct=false;
+                }
             }
+            nmBtn("Loop execute", 0, e.target);
         }
-        This.innerText = "Loop execute";
     }else{
-        This.innerText = "Stoping...";
+        textarea.value = textarea.value.replace(/, ?"nl", ?\d*\)\;/g, `);`);
+        nmBtn("Loop execute", 2, e.target);
+        tggActive();
         inAct=false;
     }
 })
 
-document.querySelector("#viewBtn").addEventListener("click", () => {
-    This = document.querySelector("#viewBtn");
-    if(This.innerText=="View"){
-        document.querySelector("section.modal").classList.remove("none")
+document.querySelector("#viewBtn").addEventListener("click", (e) => {
+    if(document.querySelector("#viewBtn").innerText=="View"){
+        document.querySelector("section.modal").classList.remove("none");
+        nmBtn("View", 1, e.target);
     }
 })
 
 document.querySelector(".modal").addEventListener("click", (e) => {
-    This = document.querySelector(".modal");
     if(e.target.id=="closeBtn"||e.target.classList[0]=="modal"){
         document.querySelector("section.modal").classList.add("none");
     }
@@ -113,10 +137,26 @@ function randomize(op){
     }
 }
 
-async function actDsct(v=[], interval=100, op="n"){
+async function actDsct(v=[], interval, op="n", loopSleep=0){
+    let oldOp=op;
+    op=op.replace('l', '')
     if(op=="n"){
         for(let i=0;i<v.length;i++){
             if(typeof(v[i])=="object"){
+                let opTime = v[i][v[i].length-1];
+                if(opTime=="i"){
+                    v[i].pop();
+                    let last = v[i].pop();
+                    v[i].push(100, last);
+                }else if(opTime=="h"){
+                    v[i].pop();
+                    let last = v[i].pop();
+                    v[i].push(last, interval);
+                }else if(opTime=="hi"){
+                    v[i].pop();
+                }else{
+                    v[i].push(100, interval);
+                }
                 await actDsct(v[i], interval, "g");
             }else{
                 all[v[i]].classList.add("onByAnimation");
@@ -133,6 +173,9 @@ async function actDsct(v=[], interval=100, op="n"){
             all[v[i]].classList.remove("onByAnimation");
         }
         await Sleep(v[v.length-1]);
+    }
+    if(oldOp=="nl"){
+        await Sleep(loopSleep);
     }
 }
 
@@ -193,8 +236,12 @@ function mouseMV(e){
     }
 }
 
-function atualizaView(op){
-    if(op=="a"){
+async function atualizaView(op){
+    async function there() {
+        textarea.value = "";
+    };
+    await there();
+    if(op=="a" && recorded.length > 1){
         textarea.value += "actDsct([";
         recorded.forEach((v, i)=>{
             if(typeof(v)=="number"){
@@ -206,20 +253,76 @@ function atualizaView(op){
                 textarea.value+="["
                 recorded[i].forEach((v2, i2)=>{
                     textarea.value += v2;
-                    textarea.value += ", ";
+                    if(i2<recorded[i].length-1){
+                        textarea.value += ", ";
+                    }
                 })
                 if(i<recorded.length-1){
-                    textarea.value += "1000, 500], ";
+                    textarea.value += "], ";
                 }else{
-                    textarea.value += "1000, 500]";
+                    textarea.value += "]";
                 }
             }
         })
-        textarea.value += "]);";
+        textarea.value += "], 100);";
     }else if(op=="z"){
-        textarea.value="";
+        await there();
         recorded=[];
         auxCTRL=[];
     }
-    textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+    textarea.dispatchEvent(inputEvent);
+}
+
+function nmBtn(b, op, e){
+    if(b=="Record"){
+        if(op==1){
+            if(e.innerText=="Record"){
+                e.innerText="Finish";
+            }
+        }else{
+            if(e.innerText=="Finish"){
+                e.innerText="Record";
+            }
+        }
+    }
+    if(b=="Randomize"){
+        if(op==1){
+            if(e.innerText=="Randomize"){
+                e.innerText="Stop";
+            }
+        }else{
+            if(e.innerText=="Stop"){
+                e.innerText="Randomize";
+            }
+        }
+    }
+    if(b=="Execute"){
+        if(op==1){
+            if(e.innerText=="Execute"){
+                e.innerText="...";
+            }
+        }else{
+            if(e.innerText=="..."){
+                e.innerText="Execute";
+            }
+        }
+    }
+    if(b=="Loop execute"){
+        if(op==1){
+            if(e.innerText=="Loop execute"){
+                e.innerText="Stop";
+            }
+        }else if(op==2){
+            if(e.innerText=="Stop"){
+                e.innerText="Stoping...";
+            }
+        }else{
+            if(e.innerText=="Stoping..."){
+                e.innerText="Loop execute";
+            }
+        }
+    }
+    if(b=="View"){
+        e.innerText="View";
+    }
 }
