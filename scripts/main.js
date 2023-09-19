@@ -1,6 +1,6 @@
 const Sleep = ms => new Promise(res => setTimeout(res, ms));
 const all = window.document.querySelectorAll("span");
-const opcoes = [0,3,6,7,8,9,12,15,16,17,18,19,20,21,22,23,24,25,26];
+const opcoes = [0, 3, 6, 7, 8, 17, 16, 15, 12, 9, 18, 21, 24, 25, 26, 23, 22, 19, 20];
 var intervalID;
 var recorded=[];
 var auxCTRL=[];
@@ -59,8 +59,9 @@ document.querySelector("#randomizeBtn").addEventListener("click", (e) => {
             randomize(1)
         }
     }else{
-        nmBtn("Randomize", 0, e.target);
         randomize(0);
+        inAct=false;
+        nmBtn("Randomize", 0, e.target);
     }
 })
 
@@ -137,7 +138,7 @@ function randomize(op){
     }
 }
 
-async function actDsct(v=[], interval, op="n", loopSleep=0){
+async function actDsct(v=[], interval=100, op="n", loopSleep=0){
     let oldOp=op;
     op=op.replace('l', '')
     if(op=="n"){
